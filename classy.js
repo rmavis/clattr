@@ -56,6 +56,20 @@ var Classy = (function () {
 
 
 
+    function doesGroupHaveClass(list, class_name) {
+        var have = true,
+            n = list.length;
+
+        for (var o = 0; o < n; o++) {
+            have = ((doesElemHaveClass(list[o], class_name)) &&
+                    (have)) ? true : false;
+        }
+
+        return have;
+    }
+
+
+
     function addClassToElem(elem, class_name) {
         var added = false;
 
@@ -67,6 +81,7 @@ var Classy = (function () {
         }
         else {
             elem.className = class_name;
+            added = true;
         }
 
         return added;
@@ -74,7 +89,7 @@ var Classy = (function () {
 
 
 
-    function addToAll(list, class_name) {
+    function addClassToGroup(list, class_name) {
         var n = list.length,
             added = true;
 
@@ -82,6 +97,8 @@ var Classy = (function () {
             added = ((addClassToElem(list[o], class_name)) &&
                      (added)) ? true : false;
         }
+
+        return added;
     }
 
 
@@ -166,6 +183,14 @@ var Classy = (function () {
             return doesElemHaveClass(elem, class_name);
         },
 
+        allHasClass: function(list, class_name) {
+            return doesGroupHaveClass(list, class_name);
+        },
+
+        addClass: function(elem, class_name) {
+            return addClassToElem(elem, class_name);
+        },
+
         addToAll: function(list, class_name) {
             return addClassToGroup(list, class_name);
         },
@@ -182,7 +207,7 @@ var Classy = (function () {
             return toggleClassOnElem(elem, class_name);
         },
 
-        toggleAll: function(list, class_name) {
+        toggleOnAll: function(list, class_name) {
             return toggleClassOnGroup(list, class_name);
         }
     };
