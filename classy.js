@@ -183,7 +183,7 @@ var Classy = (function () {
             return doesElemHaveClass(elem, class_name);
         },
 
-        allHasClass: function(list, class_name) {
+        allHaveClass: function(list, class_name) {
             return doesGroupHaveClass(list, class_name);
         },
 
@@ -196,7 +196,7 @@ var Classy = (function () {
         },
 
         removeClass: function(elem, class_name) {
-            return removeElemFromClass(elem, class_name);
+            return removeClassFromElem(elem, class_name);
         },
 
         removeFromAll: function(list, class_name) {
