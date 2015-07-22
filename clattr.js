@@ -281,11 +281,11 @@ var Clattr = (function () {
         },
 
         setAttr: function(attr) {
-            attr_name_active = attr;
+            attr_name_active = (typeof attr == 'string') ? attr : attr_name_default;
         },
 
         resetAttr: function() {
-            attr_name_active = attr_name_default;
+            setAttr();
         }
     };
 })();
