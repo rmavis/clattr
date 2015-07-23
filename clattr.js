@@ -36,6 +36,11 @@
  * You can change the attribute that Clattr operates on with the
  * `setAttr` method. Give it any string. You can change back to the
  * default "class" attribute with the `resetAttr` method.
+ *
+ * TODO
+ * - temporary, on-demand attribute names
+ *   maybe as third parameter in public methods?
+ *   accept lists?
  */
 
 var Clattr = (function () {
@@ -46,13 +51,24 @@ var Clattr = (function () {
 
 
 
-    function exec(func, elems, attr_list) {
+    function exec(func, elems, attr_list, attr_name) {
+        var attr_name_swap = null;
+
+        if (typeof attr_name == 'string') {
+            attr_name_swap = attr_name_active;
+            attr_name_active = attr_name;
+        }
+
         if (typeof attr_list == 'string') {
             attr_list = [attr_list];
         }
 
         var ret = func(elems, attr_list);
         elem_attr_array = null;
+
+        if (attr_name_swap) {
+            attr_name_active = attr_name_swap;
+        }
 
         return ret;
     }
@@ -267,29 +283,29 @@ var Clattr = (function () {
      * Public methods.
      */
     return {
-        has: function(elems, attrs) {
+        has: function(elems, attr_vals, attr_name) {
             var func = (typeof elems == 'array') ? doesElemHaveAttr : doesGroupHaveAttr;
-            return exec(func, elems, attrs);
+            return exec(func, elems, attr_vals, attr_name);
         },
 
-        add: function(elems, attrs) {
+        add: function(elems, attr_vals, attr_name) {
             var func = (typeof elems == 'array') ? addAttrToElem : addAttrToGroup;
-            return exec(func, elems, attrs);
+            return exec(func, elems, attr_vals, attr_name);
         },
 
-        remove: function(elems, attrs) {
+        remove: function(elems, attr_vals, attr_name) {
             var func = (typeof elems == 'array') ? removeAttrFromElem : removeAttrFromGroup;
-            return exec(func, elems, attrs);
+            return exec(func, elems, attr_vals, attr_name);
         },
 
-        toggle: function(elems, attrs) {
+        toggle: function(elems, attr_vals, attr_name) {
             var func = (typeof elems == 'array') ? toggleAttrOnElem : toggleAttrOnGroup;
-            return exec(func, elems, attrs);
+            return exec(func, elems, attr_vals, attr_name);
         },
 
-        set: function(elems, attrs) {
+        set: function(elems, attr_vals, attr_name) {
             var func = (typeof elems == 'array') ? setAttrOnElem : setAttrOnGroup;
-            return exec(func, elems, attrs);
+            return exec(func, elems, attr_vals, attr_name);
         },
 
         setAttr: function(attr) {
