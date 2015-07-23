@@ -71,8 +71,8 @@ var Clattr = (function () {
 
 
     function doesElemHaveAttr(elem, attr_list) {
-        var arr = (elem_attr_array) ? elem_attr_array : getAttrArray(elem);
-        var n = arr.length,
+        var attr_arr = (elem_attr_array) ? elem_attr_array : getAttrArray(elem);
+        var n = attr_arr.length,
             has = false;
 
         if (n > 0) {
@@ -86,7 +86,7 @@ var Clattr = (function () {
 
                 outB:
                 for (var i = 0; i < n; i++) {
-                    if (arr[i] == attx) {
+                    if (attr_arr[i] == attx) {
                         ihas = true;
                         break outB;
                     }
@@ -120,30 +120,39 @@ var Clattr = (function () {
 
 
 
+    function setAttrOnElem(elem, attr_list) {
+        if (elem.setAttribute(attr_name_active, attr_list.join(" ").trim())) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+
+
     function addAttrToElem(elem, attr_list) {
-        var arr = getAttrArray(elem),
+        var attr_arr = getAttrArray(elem);
+        var m = attr_arr.length,
             added = false;
 
-        if (arr.length == 0) {
-            elem.setAttribute(attr_name_active, attr_list.join(" "));
-            added = true;
+        if (m == 0) {
+            added = setAttrOnElem(elem, attr_list);
         }
 
         else {
-            var attr_str = elem.getAttribute(attr_name_active),
-                m = attr_list.length,
+            var m = attr_list.length,
                 adds = 0;
 
             for (var o = 0; o < m; o++) {
                 var attx = attr_list[o];
 
                 if (!doesElemHaveAttr(elem, [attx])) {
-                    attr_str += " " + attx;
+                    attr_arr.push(attx);
                     adds += 1;
                 }
             }
 
-            elem.setAttribute(attr_name_active, attr_str.trim());
+            setAttrOnElem(elem, attr_arr);
             added = (adds == m) ? true : false;
         }
 
@@ -152,34 +161,18 @@ var Clattr = (function () {
 
 
 
-    function addAttrToGroup(elem_list, attr_list) {
-        var n = elem_list.length,
-            adds = 0;
-
-        for (var o = 0; o < n; o++) {
-            if (addAttrToElem(list[o], attr_list)) {
-                adds += 1;
-            }
-        }
-
-        if (adds == n) {return true;}
-        else {return false;}
-    }
-
-
-
     function removeAttrFromElem(elem, attr_list) {
-        var arr = getAttrArray(elem);
-        var m = arr.length,
+        var attr_arr = getAttrArray(elem);
+        var m = attr_arr.length,
             removed = false;
 
         if (m > 0) {
             var n = attr_list.length,
-                keep_str = "",
+                keeps = [ ],
                 rms = 0;
 
             for (var o = 0; o < m; o++) {
-                var attx = arr[o],
+                var attx = attr_arr[o],
                     keep = true;
 
                 out:
@@ -191,33 +184,17 @@ var Clattr = (function () {
                 }
 
                 if (keep) {
-                    keep_str += " " + attx;
+                    keeps.push(attx);
                 } else {
                     rms += 1;
                 }
             }
 
-            elem.setAttribute(attr_name_active, keep_str.trim());
+            setAttrOnElem(elem, keeps);
             removed = (rms == n) ? true : false;
         }
 
         return removed;
-    }
-
-
-
-    function removeAttrFromGroup(elem_list, attr_list) {
-        var n = elem_list.length,
-            rms = 0;
-
-        for (var o = 0; o < n; o++) {
-            if (removeAttrFromElem(elem_list[o], attr_list)) {
-                rms += 1;
-            }
-        }
-
-        if (rms == n) {return true;}
-        else {return false;}
     }
 
 
@@ -234,21 +211,51 @@ var Clattr = (function () {
 
 
 
-    function toggleAttrOnGroup(elem_list, attr_list) {
-        var m = elem_list.length,
-            togs = 0;
+    function applyToGroup(func, elem_list, attr_list) {
+        var n = elem_list.length,
+            ops = 0;
 
-        for (var o = 0; o < m; o++) {
-            var n = attr_list.length;
-
-            for (var i = 0; i < n; i++) {
-                if (toggleAttrOnElem(elem_list[o], [attr_list[i]])) {
-                    togs += 1;
-                }
+        for (var o = 0; o < n; o++) {
+            if (func(elem_list[o], attr_list)) {
+                ops += 1;
             }
         }
 
-        if (togs == n) {return true;}
+        if (ops == n) {return true;}
+        else {return false;}
+    }
+
+
+
+    function addAttrToGroup(elem_list, attr_list) {
+        return applyToGroup(addAttrToElem, elem_list, attr_list);
+    }
+
+
+
+    function removeAttrFromGroup(elem_list, attr_list) {
+        return applyToGroup(removeAttrFromElem, elem_list, attr_list);
+    }
+
+
+
+    function setAttrOnGroup(elem_list, attr_list) {
+        return applyToGroup(setAttrOnElem, elem_list, attr_list);
+    }
+
+
+
+    function toggleAttrOnGroup(elem_list, attr_list) {
+        var m = attr_list.length,
+            togs = 0;
+
+        for (var o = 0; o < m; o++) {
+            if (applyToGroup(toggleAttrOnElem, elem_list, [attr_list[o]])) {
+                togs += 1;
+            }
+        }
+
+        if (togs == m) {return true;}
         else {return false;}
     }
 
@@ -277,6 +284,11 @@ var Clattr = (function () {
 
         toggle: function(elems, attrs) {
             var func = (typeof elems == 'array') ? toggleAttrOnElem : toggleAttrOnGroup;
+            return exec(func, elems, attrs);
+        },
+
+        set: function(elems, attrs) {
+            var func = (typeof elems == 'array') ? setAttrOnElem : setAttrOnGroup;
             return exec(func, elems, attrs);
         },
 
