@@ -78,9 +78,9 @@ var Clattr = (function () {
 
         for (var o = 0; o < names; o++) {
             if (func(elems, attr_list, attr_name_active[o])) {
-                elem_attr_array = null;
                 trues += 1;
             }
+            elem_attr_array = null;
         }
 
 
