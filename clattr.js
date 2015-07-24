@@ -3,8 +3,10 @@
  * This is a simple object for working with element attributes.
  *
  * Aside from `setAttr` and `resetAttr`, the public methods receive
- * two parameters in the same order: an element or array of elements
- * to operate on, and a string or array of strings to operate with.
+ * three parameters in the same order: an element or collection of
+ * elements to operate on, a string or array of strings representing
+ * attribute values to operate with, and a string or array of strings
+ * representing attribute names to receive those attribute values.
  *
  * By default, Clattr operates on the `class` attribute. So calling
  * Clattr.add(document.getElementById('bam'), 'boom')
@@ -34,50 +36,69 @@
  * so don't worry about it.
  *
  * You can change the attribute that Clattr operates on with the
- * `setAttr` method. Give it any string. You can change back to the
- * default "class" attribute with the `resetAttr` method.
- *
- * TODO
- * - temporary, on-demand attribute names
- *   maybe as third parameter in public methods?
- *   accept lists?
+ * `setAttr` method. Give it any string or array of strings. You can
+ * change back to the default "class" attribute with the `resetAttr`
+ * method.
  */
 
 var Clattr = (function () {
 
-    var attr_name_default = "class";
+    var elem_attr_array = null,
+        attr_name_default = ["class"];
     var attr_name_active = attr_name_default;
-    var elem_attr_array = null;
 
 
 
-    function exec(func, elems, attr_list, attr_name) {
-        var attr_name_swap = null;
-
-        if (typeof attr_name == 'string') {
-            attr_name_swap = attr_name_active;
-            attr_name_active = attr_name;
-        }
+    function exec(funcs, elems, attr_list, attr_names) {
+        // Check the parameters.
 
         if (typeof attr_list == 'string') {
             attr_list = [attr_list];
         }
 
-        var ret = func(elems, attr_list);
-        elem_attr_array = null;
+        var func = (elems.length) ? funcs.plural : funcs.single;
+
+        var attr_name_swap = null;
+
+        if (typeof attr_names != 'undefined') {
+            if (typeof attr_names == 'string') {
+                attr_name_swap = attr_name_active;
+                attr_name_active = [attr_names];
+            } else if (attr_names instanceof Array) {
+                attr_name_swap = attr_name_active;
+                attr_name_active = attr_names;
+            }
+        }
+
+
+        // Operate on each attribute name.
+
+        var trues = 0,
+            names = attr_name_active.length;
+
+        for (var o = 0; o < names; o++) {
+            if (func(elems, attr_list, attr_name_active[o])) {
+                elem_attr_array = null;
+                trues += 1;
+            }
+        }
+
+
+        // Wrap it up.
 
         if (attr_name_swap) {
             attr_name_active = attr_name_swap;
         }
 
-        return ret;
+        if (trues == names) {return true;}
+        else {return false;}
     }
 
 
 
-    function getAttrArray(elem) {
-        if (elem.hasAttribute(attr_name_active)) {
-            elem_attr_array = elem.getAttribute(attr_name_active).split(" ");
+    function getAttrArray(elem, attr_name) {
+        if (elem.hasAttribute(attr_name)) {
+            elem_attr_array = elem.getAttribute(attr_name).split(" ");
             return elem_attr_array;
         } else {
             return [ ];
@@ -86,8 +107,8 @@ var Clattr = (function () {
 
 
 
-    function doesElemHaveAttr(elem, attr_list) {
-        var attr_arr = (elem_attr_array) ? elem_attr_array : getAttrArray(elem);
+    function doesElemHaveAttr(elem, attr_list, attr_name) {
+        var attr_arr = (elem_attr_array) ? elem_attr_array : getAttrArray(elem, attr_name);
         var n = attr_arr.length,
             has = false;
 
@@ -120,12 +141,12 @@ var Clattr = (function () {
 
 
 
-    function doesGroupHaveAttr(elem_list, attr_list) {
+    function doesGroupHaveAttr(elem_list, attr_list, attr_name) {
         var have = true;
 
         out:
         for (var o = 0, n = elem_list.length; o < n; o++) {
-            if (!doesElemHaveAttr(elem_list[o], attr_list)) {
+            if (!doesElemHaveAttr(elem_list[o], attr_list, attr_name)) {
                 have = false;
                 break out;
             }
@@ -136,8 +157,8 @@ var Clattr = (function () {
 
 
 
-    function setAttrOnElem(elem, attr_list) {
-        if (elem.setAttribute(attr_name_active, attr_list.join(" ").trim())) {
+    function setAttrOnElem(elem, attr_list, attr_name) {
+        if (elem.setAttribute(attr_name, attr_list.join(" ").trim())) {
             return true;
         } else {
             return false;
@@ -146,13 +167,13 @@ var Clattr = (function () {
 
 
 
-    function addAttrToElem(elem, attr_list) {
-        var attr_arr = getAttrArray(elem);
+    function addAttrToElem(elem, attr_list, attr_name) {
+        var attr_arr = getAttrArray(elem, attr_name);
         var m = attr_arr.length,
             added = false;
 
         if (m == 0) {
-            added = setAttrOnElem(elem, attr_list);
+            added = setAttrOnElem(elem, attr_list, attr_name);
         }
 
         else {
@@ -162,13 +183,13 @@ var Clattr = (function () {
             for (var o = 0; o < m; o++) {
                 var attx = attr_list[o];
 
-                if (!doesElemHaveAttr(elem, [attx])) {
+                if (!doesElemHaveAttr(elem, [attx], attr_name)) {
                     attr_arr.push(attx);
                     adds += 1;
                 }
             }
 
-            setAttrOnElem(elem, attr_arr);
+            setAttrOnElem(elem, attr_arr, attr_name);
             added = (adds == m) ? true : false;
         }
 
@@ -177,8 +198,8 @@ var Clattr = (function () {
 
 
 
-    function removeAttrFromElem(elem, attr_list) {
-        var attr_arr = getAttrArray(elem);
+    function removeAttrFromElem(elem, attr_list, attr_name) {
+        var attr_arr = getAttrArray(elem, attr_name);
         var m = attr_arr.length,
             removed = false;
 
@@ -206,7 +227,7 @@ var Clattr = (function () {
                 }
             }
 
-            setAttrOnElem(elem, keeps);
+            setAttrOnElem(elem, keeps, attr_name);
             removed = (rms == n) ? true : false;
         }
 
@@ -215,11 +236,11 @@ var Clattr = (function () {
 
 
 
-    function toggleAttrOnElem(elem, attr_list) {
+    function toggleAttrOnElem(elem, attr_list, attr_name) {
         var is_on = false;
 
-        if (!removeAttrFromElem(elem, attr_list)) {
-            is_on = addAttrToElem(elem, attr_list);
+        if (!removeAttrFromElem(elem, attr_list, attr_name)) {
+            is_on = addAttrToElem(elem, attr_list, attr_name);
         }
 
         return is_on;
@@ -227,12 +248,12 @@ var Clattr = (function () {
 
 
 
-    function applyToGroup(func, elem_list, attr_list) {
+    function applyToGroup(func, elem_list, attr_list, attr_name) {
         var n = elem_list.length,
             ops = 0;
 
         for (var o = 0; o < n; o++) {
-            if (func(elem_list[o], attr_list)) {
+            if (func(elem_list[o], attr_list, attr_name)) {
                 ops += 1;
             }
         }
@@ -243,30 +264,30 @@ var Clattr = (function () {
 
 
 
-    function addAttrToGroup(elem_list, attr_list) {
-        return applyToGroup(addAttrToElem, elem_list, attr_list);
+    function addAttrToGroup(elem_list, attr_list, attr_name) {
+        return applyToGroup(addAttrToElem, elem_list, attr_list, attr_name);
     }
 
 
 
-    function removeAttrFromGroup(elem_list, attr_list) {
-        return applyToGroup(removeAttrFromElem, elem_list, attr_list);
+    function removeAttrFromGroup(elem_list, attr_list, attr_name) {
+        return applyToGroup(removeAttrFromElem, elem_list, attr_list, attr_name);
     }
 
 
 
-    function setAttrOnGroup(elem_list, attr_list) {
-        return applyToGroup(setAttrOnElem, elem_list, attr_list);
+    function setAttrOnGroup(elem_list, attr_list, attr_name) {
+        return applyToGroup(setAttrOnElem, elem_list, attr_list, attr_name);
     }
 
 
 
-    function toggleAttrOnGroup(elem_list, attr_list) {
+    function toggleAttrOnGroup(elem_list, attr_list, attr_name) {
         var m = attr_list.length,
             togs = 0;
 
         for (var o = 0; o < m; o++) {
-            if (applyToGroup(toggleAttrOnElem, elem_list, [attr_list[o]])) {
+            if (applyToGroup(toggleAttrOnElem, elem_list, [attr_list[o]], attr_name)) {
                 togs += 1;
             }
         }
@@ -283,37 +304,43 @@ var Clattr = (function () {
      * Public methods.
      */
     return {
-        has: function(elems, attr_vals, attr_name) {
-            var func = (typeof elems == 'array') ? doesElemHaveAttr : doesGroupHaveAttr;
-            return exec(func, elems, attr_vals, attr_name);
+        has: function(elems, attr_vals, attr_names) {
+            return exec({single: doesElemHaveAttr, plural: doesGroupHaveAttr},
+                        elems, attr_vals, attr_names);
         },
 
-        add: function(elems, attr_vals, attr_name) {
-            var func = (typeof elems == 'array') ? addAttrToElem : addAttrToGroup;
-            return exec(func, elems, attr_vals, attr_name);
+        add: function(elems, attr_vals, attr_names) {
+            return exec({single: addAttrToElem, plural: addAttrToGroup},
+                        elems, attr_vals, attr_names);
         },
 
-        remove: function(elems, attr_vals, attr_name) {
-            var func = (typeof elems == 'array') ? removeAttrFromElem : removeAttrFromGroup;
-            return exec(func, elems, attr_vals, attr_name);
+        remove: function(elems, attr_vals, attr_names) {
+            return exec({single: removeAttrFromElem, plural: removeAttrFromGroup},
+                        elems, attr_vals, attr_names);
         },
 
-        toggle: function(elems, attr_vals, attr_name) {
-            var func = (typeof elems == 'array') ? toggleAttrOnElem : toggleAttrOnGroup;
-            return exec(func, elems, attr_vals, attr_name);
+        toggle: function(elems, attr_vals, attr_names) {
+            return exec({single: toggleAttrOnElem, plural: toggleAttrOnGroup},
+                        elems, attr_vals, attr_names);
         },
 
-        set: function(elems, attr_vals, attr_name) {
-            var func = (typeof elems == 'array') ? setAttrOnElem : setAttrOnGroup;
-            return exec(func, elems, attr_vals, attr_name);
+        set: function(elems, attr_vals, attr_names) {
+            return exec({single: setAttrOnElem, plural: setAttrOnGroup},
+                        elems, attr_vals, attr_names);
         },
 
         setAttr: function(attr) {
-            attr_name_active = (typeof attr == 'string') ? attr : attr_name_default;
+            if (typeof attr == 'string') {
+                attr_name_active = [attr];
+            } else if ((typeof attr == 'object') && (attr instanceof Array)) {
+                attr_name_active = attr;
+            } else {
+                attr_name_active = attr_name_default;
+            }
         },
 
         resetAttr: function() {
-            setAttr();
+            this.setAttr();
         }
     };
 })();
