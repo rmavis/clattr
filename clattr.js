@@ -52,7 +52,7 @@ var Clattr = (function () {
     function exec(funcs, elems, attr_list, attr_names) {
         // Check the parameters.
 
-        if (!elems || !attr_list) {
+        if (!elems || !elems.length || !attr_list || !attr_list.length) {
             return false;
         }
 
