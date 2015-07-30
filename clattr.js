@@ -52,6 +52,10 @@ var Clattr = (function () {
     function exec(funcs, elems, attr_list, attr_names) {
         // Check the parameters.
 
+        if (!elems || !attr_list) {
+            return false;
+        }
+
         if (typeof attr_list == 'string') {
             attr_list = [attr_list];
         }
