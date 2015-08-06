@@ -332,8 +332,9 @@ var Clattr = (function () {
         },
 
         replace: function(elems, attrs_o, attrs_i, attr_names) {
-            this.remove(elems, attrs_o, attr_names);
-            this.add(elems, attrs_i, attr_names);
+            var ret = ((this.remove(elems, attrs_o, attr_names)) &&
+                       (this.add(elems, attrs_i, attr_names)));
+            return ret;
         },
 
         toggle: function(elems, attr_vals, attr_names) {
