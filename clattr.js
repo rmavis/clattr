@@ -52,7 +52,8 @@ var Clattr = (function () {
     function exec(funcs, elems, attr_list, attr_names) {
         // Check the parameters.
 
-        if (!elems || !elems.length || !attr_list || !attr_list.length) {
+        if (!elems || !attr_list) {
+            console.log("Clattr fail: missing elems ("+typeof elems+") or attribute list ("+typeof attr_list+").");
             return false;
         }
 
@@ -60,7 +61,14 @@ var Clattr = (function () {
             attr_list = [attr_list];
         }
 
-        var func = (elems.length) ? funcs.plural : funcs.single;
+        /* The `elems` parameter can be a variety of things -- an element, an
+         * array, an HTMLCollection -- that are all `typeof` object, and that
+         * all can have a `length` greater than 1 (even an element pulled by
+         * `getElementById` will have a length of 2). It seems that the easiest
+         * distinction between an object that is an element and an object that
+         * is a collection of elements is the `tagName`. A collection will not
+         * have a `tagName`. */
+        var func = (elems.tagName) ? funcs.single : funcs.plural;
 
         var attr_name_swap = null;
 
@@ -321,6 +329,11 @@ var Clattr = (function () {
         remove: function(elems, attr_vals, attr_names) {
             return exec({single: removeAttrFromElem, plural: removeAttrFromGroup},
                         elems, attr_vals, attr_names);
+        },
+
+        replace: function(elems, attrs_o, attrs_i, attr_names) {
+            this.remove(elems, attrs_o, attr_names);
+            this.add(elems, attrs_i, attr_names);
         },
 
         toggle: function(elems, attr_vals, attr_names) {
