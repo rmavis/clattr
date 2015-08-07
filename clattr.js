@@ -76,7 +76,8 @@ var Clattr = (function () {
             if (typeof attr_names == 'string') {
                 attr_name_swap = attr_name_active;
                 attr_name_active = [attr_names];
-            } else if (attr_names instanceof Array) {
+            }
+            else if (attr_names instanceof Array) {
                 attr_name_swap = attr_name_active;
                 attr_name_active = attr_names;
             }
@@ -112,7 +113,8 @@ var Clattr = (function () {
         if (elem.hasAttribute(attr_name)) {
             elem_attr_array = elem.getAttribute(attr_name).split(" ");
             return elem_attr_array;
-        } else {
+        }
+        else {
             return [ ];
         }
     }
@@ -172,7 +174,8 @@ var Clattr = (function () {
     function setAttrOnElem(elem, attr_list, attr_name) {
         if (elem.setAttribute(attr_name, attr_list.join(" ").trim())) {
             return true;
-        } else {
+        }
+        else {
             return false;
         }
     }
@@ -234,7 +237,8 @@ var Clattr = (function () {
 
                 if (keep) {
                     keeps.push(attx);
-                } else {
+                }
+                else {
                     rms += 1;
                 }
             }
@@ -332,9 +336,9 @@ var Clattr = (function () {
         },
 
         replace: function(elems, attrs_o, attrs_i, attr_names) {
-            var ret = ((this.remove(elems, attrs_o, attr_names)) &&
-                       (this.add(elems, attrs_i, attr_names)));
-            return ret;
+            var r = this.remove(elems, attrs_o, attr_names);
+            var a = this.add(elems, attrs_i, attr_names);
+            return (r && a);
         },
 
         toggle: function(elems, attr_vals, attr_names) {
@@ -350,9 +354,11 @@ var Clattr = (function () {
         setAttr: function(attr) {
             if (typeof attr == 'string') {
                 attr_name_active = [attr];
-            } else if ((typeof attr == 'object') && (attr instanceof Array)) {
+            }
+            else if ((typeof attr == 'object') && (attr instanceof Array)) {
                 attr_name_active = attr;
-            } else {
+            }
+            else {
                 attr_name_active = attr_name_default;
             }
         },
