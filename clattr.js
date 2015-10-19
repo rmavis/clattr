@@ -1,17 +1,57 @@
-/* CLATTR
+/*
+ * CLATTR
  *
- * This is a simple object for working with element attributes.
+ * This is a module for working with element attributes.
  *
- * Aside from `setAttr` and `resetAttr`, the public methods receive
- * three parameters in the same order: an element or collection of
- * elements to operate on, a string or array of strings representing
- * attribute values to operate with, and a string or array of strings
- * representing attribute names to receive those attribute values.
  *
- * By default, Clattr operates on the `class` attribute. So calling
+ * USAGE
+ *
+ * Toggle the class of a hamburger menu:
+ * Clattr.toggle(document.getElementById('burger-button'),
+ *               'toggle-on');
+ *
+ * Highlight required form elements:
+ * Clattr.add(formElem.getElementsByClassName('required-inputs'),
+ *            'required-missing');
+ *
+ * Set a image's alt text:
+ * Clattr.set(document.getElementById('img-id'),
+ *            'This image is very good.',
+ *            'alt');
+ * 
+ *
+ * DEPENDENCIES
+ *
+ * None.
+ *
+ *
+ * DETAILS
+ *
+ * The `has`, `set`, `add`, `remove`, and `toggle` methods all take
+ * the same three parameters: an element or list of elements, an
+ * attribute value or list of values, and an attribute name or list
+ * of names. The `replace` method is similar except it accepts two
+ * lists of attribute values -- it will remove the first and add the
+ * second -- before the attribute name, for a total of four possible
+ * parameters.
+ *
+ * For each method, the first two parameters (three for `replace`)
+ * are requried. The third (fourth for `replace`) is optional. If it
+ * not given, then the values will be applied to the currently-set
+ * attribute.
+ *
+ * By default, Clattr operates on the `class` attribute. You can
+ * change the attribute that Clattr operates on with the `setAttr`
+ * method. Give it any string or array of strings. You can change
+ * back to the default "class" attribute with the `resetAttr`
+ * method, which takes no parameters.
+ *
+ * So calling
  * Clattr.add(document.getElementById('bam'), 'boom')
+ *
  * will add "boom" to the class list of the element ID'd "bam", and
  * Clattr.add(document.getElementsByTagName("p"), ['boom', 'room'])
+ *
  * will add "boom" and "room" to the class list of each `p` element
  * in the document. If the element(s) lack a "class" attribute, then
  * one will be added.
@@ -25,20 +65,12 @@
  * occurs, then `add` will return false, though the method will
  * effectively ensure that each of the given class names are on each
  * of the given elements.
- * 
- * The exception to this modus operandi is `toggle`, which will run
- * through the given class names and remove those it currently has
- * and add those it doesn't. If all of the given class name(s) are
- * added to all of the given elements, then it will return true.
  *
- * You might think this style of returns a little hokey, and it
- * might be. But you'll probably ignore it most of the time anyway,
- * so don't worry about it.
+ * The exception to this MO is `toggle`, which will run through the
+ * given class names and remove those it currently has and add those
+ * it doesn't. If all of the given class name(s) are added to all of
+ * the given elements, then it will return true.
  *
- * You can change the attribute that Clattr operates on with the
- * `setAttr` method. Give it any string or array of strings. You can
- * change back to the default "class" attribute with the `resetAttr`
- * method.
  */
 
 var Clattr = (function () {
@@ -319,9 +351,16 @@ var Clattr = (function () {
     /*
      * Public methods.
      */
+
     return {
+
         has: function(elems, attr_vals, attr_names) {
             return exec({single: doesElemHaveAttr, plural: doesGroupHaveAttr},
+                        elems, attr_vals, attr_names);
+        },
+
+        set: function(elems, attr_vals, attr_names) {
+            return exec({single: setAttrOnElem, plural: setAttrOnGroup},
                         elems, attr_vals, attr_names);
         },
 
@@ -335,20 +374,15 @@ var Clattr = (function () {
                         elems, attr_vals, attr_names);
         },
 
-        replace: function(elems, attrs_o, attrs_i, attr_names) {
-            var r = this.remove(elems, attrs_o, attr_names);
-            var a = this.add(elems, attrs_i, attr_names);
-            return (r && a);
-        },
-
         toggle: function(elems, attr_vals, attr_names) {
             return exec({single: toggleAttrOnElem, plural: toggleAttrOnGroup},
                         elems, attr_vals, attr_names);
         },
 
-        set: function(elems, attr_vals, attr_names) {
-            return exec({single: setAttrOnElem, plural: setAttrOnGroup},
-                        elems, attr_vals, attr_names);
+        replace: function(elems, attrs_o, attrs_i, attr_names) {
+            var r = this.remove(elems, attrs_o, attr_names);
+            var a = this.add(elems, attrs_i, attr_names);
+            return (r && a);
         },
 
         setAttr: function(attr) {
@@ -366,5 +400,6 @@ var Clattr = (function () {
         resetAttr: function() {
             this.setAttr();
         }
+
     };
 })();
