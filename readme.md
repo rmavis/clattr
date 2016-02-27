@@ -2,6 +2,8 @@
 
 This is a module for managing element attributes.
 
+[Here's a little demo](http://richardmavis.info/misc/clattr/test.html).
+
 
 ## Usage
 
@@ -79,5 +81,3 @@ The exception to this MO is `toggle`, which will run through the
 given class names and remove those it currently has and add those
 it doesn't. If all of the given class name(s) are added to all of
 the given elements, then it will return true.
-
-[Here's a little demo](http://richardmavis.info/misc/clattr/test.html).
