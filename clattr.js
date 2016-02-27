@@ -84,7 +84,7 @@ var Clattr = (function () {
     function exec(funcs, elems, attr_list, attr_names) {
         // Check the parameters.
 
-        if (!elems || !attr_list) {
+        if (!elems || typeof attr_list == 'undefined') {
             console.log("Clattr fail: missing elems ("+typeof elems+") or attribute list ("+typeof attr_list+").");
             return false;
         }
