@@ -1,7 +1,7 @@
 /*
  * CLATTR
  *
- * This is a module for working with element attributes.
+ * This is a module for managing element attributes.
  *
  *
  * USAGE
